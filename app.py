@@ -1,8 +1,11 @@
 import os
 from flask import Flask, jsonify, request, abort, make_response, render_template
 from flask_pymongo import PyMongo, ObjectId # flask.ext.pymongo deprecated
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+# Allow CORS
+CORS(app)
 
 # Load Config File for DB
 app.config.from_pyfile('config.cfg')

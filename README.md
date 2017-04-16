@@ -28,14 +28,14 @@ $ python app.py
 ```
 
 ## Useful Links
-project structure:
+Project Structure:
 http://stackoverflow.com/questions/30771387/flask-restful-project-structure
 
-upload files:
+Upload files:
 https://www.youtube.com/watch?v=bxFaa_FNdL4
 
-jwt:
+JWT:
 https://realpython.com/blog/python/token-based-authentication-with-flask/
 
-production:
+Production:
 https://damyanon.net/
