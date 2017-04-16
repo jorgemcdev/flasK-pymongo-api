@@ -19,7 +19,7 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 @app.route('/')
 def home():
-    return 'Home route!'
+    return '/Home'
 
 @app.route('/fixtures', methods=['GET'])
 def add():
@@ -36,21 +36,17 @@ def main():
     return render_template('upload-file.html')
 
 def allowed_file(filename):
-    return '.' in filename and \
-       filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Upload File
 @app.route('/upload', methods=['POST'])
 def upload():
     result = {'errors': [] }
-
     # Set the target Folder
     target = os.path.join(APP_ROOT, 'images/')
-
     # Get sure the folder exists
     if not os.path.isdir(target):
         os.mkdir(target)
-
     # Loop file to get the images names
     for file in request.files.getlist("file"):
         filename = file.filename
@@ -68,7 +64,6 @@ def upload():
 @app.route('/users', methods=['GET'])
 def get_all_users():
     user = mongo.db.users
-
     output = []
     for q in user.find():
         output.append({'_id': str(q['_id']), 'name': q['name'], 'language': q['language']})
@@ -84,22 +79,27 @@ def get_one_user(user_id):
         output = {'user': {'_id': str(q['_id']), 'name': q['name'], 'language': q['language']}}
     else:
         output = {'error' : 'user not found'}
+
     return jsonify(output)
 
 # Post user
 @app.route('/users', methods=['POST'])
 def post_user():
     user = mongo.db.users
-
     name = request.form['name']
     language = request.form['language']
+    if (len(name) > 1 and len(language) > 0):
+        q = user.find_one({'name':name})
+        if q:
+            user_found = {'_id': str(q['_id']),'name': q['name'], 'language': q['language']}
+            output = {'error': 'user exists !', 'user': user_found}
+        else:
+            inserted_id = user.insert({'name': name, 'language': language})
+            output = {'message': 'new user created'}
+    else:
+        output = {'error': 'required fields error'}
 
-    inserted_id = user.insert({'name': name, 'language': language})
-    new_user = user.find_one({'_id' : inserted_id})
-
-    output = {'_id': str(q['_id']),'name': new_user['name'], 'language': new_user['language']}
-
-    return jsonify({'user' : output})
+    return jsonify(output)
 
 # Update a user
 @app.route('/users/<user_id>', methods=['PUT'])
@@ -116,6 +116,7 @@ def update_user(user_id):
         output = {'message' : 'user updated'}
     else:
         output = {'error' : 'user not found'}
+
     return jsonify(output)
 
 # Delete a user
@@ -124,8 +125,7 @@ def delete_user(user_id):
     user = mongo.db.users
     q = user.find_one({'_id': ObjectId(user_id)})
     if q:
-        id = q["_id"]
-        user.remove(id)
+        user.remove(q["_id"])
         output = {'message' : 'user deleted'}
     else:
         output = {'error' : 'user not found'}
